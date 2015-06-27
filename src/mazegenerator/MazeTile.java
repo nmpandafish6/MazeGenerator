@@ -187,4 +187,12 @@ public class MazeTile {
         return openPaths;
     }
     
+    public void addStar(){
+        orientation = (byte) (orientation | starMask);
+    }
+    
+    public void removeStar(){
+        orientation = (byte) (orientation & ~starMask);
+    }
+    
 }

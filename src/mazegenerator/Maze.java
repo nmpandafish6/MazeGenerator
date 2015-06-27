@@ -14,24 +14,22 @@ public class Maze {
     private int startX = 0;
     private int startY = 0;
     private MazeTile[][] maze;
-    private MazeTile lastTile;
+    private Coordinate lastCoordinate = null;
     private double pathAverage;
     private int tilesCreated = 0;
-    private ArrayList<Coordinate> openPaths;
+    private ArrayList<Coordinate> openPaths = new ArrayList<>();
     private boolean mazeDone = false;
     
     public Maze(int size){
         width = size;
         height = size;
         maze = new MazeTile[height][width];
-        openPaths = new ArrayList<>();
     }
     
     public Maze(int width, int height){
         this.width = width;
         this.height = height;
         maze = new MazeTile[height][width];
-        openPaths = new ArrayList<>();
     }
     
     public Maze(int size, int startX, int startY){
@@ -40,7 +38,6 @@ public class Maze {
         this.startX = startX;
         this.startY = startY;
         maze = new MazeTile[height][width];
-        openPaths = new ArrayList<>();
     }
 
     public Maze(int width, int height,int startX, int startY){
@@ -49,58 +46,70 @@ public class Maze {
         this.startX = startX;
         this.startY = startY;
         maze = new MazeTile[height][width];
-        openPaths = new ArrayList<>();
     }    
     
     public void generate() throws Exception{
-        boolean firstMove = true;
         while(!mazeDone){
-            if(firstMove){
-                lastTile = this.generateFirstTile();
-                firstMove = false;
+            if(tilesCreated == 0){
+                this.generateFirstTile();
             }else{
-                lastTile = this.generateTile();
+                this.generateTile();
             }
         }
         this.nullifyMissing();
     }
     
+    public void regenerate() throws Exception{
+        for(int y = 0; y < maze.length; y++){
+            for(int x = 0; x < maze[0].length;x++){
+                maze[y][x] = null;
+            }
+        }
+        lastCoordinate = null;
+        pathAverage = 0;
+        tilesCreated = 0;
+        openPaths.removeAll(openPaths);
+        mazeDone = false;
+        generate();
+    }
+    
     private MazeTile generateFirstTile() throws Exception{
-            MazeTile tile = null;
-            if(!this.isInBounds(new Coordinate(startX, startY))){
-                throw new Exception("Start Coordinates Out of Bound! OutOfBoundException");
-            }
-            if(this.isAtBounds(new Coordinate(startX, startY))){
-                tile = this.generateBoundedTile(new Coordinate(startX, startY), true);
+        MazeTile tile = null;
+        if(!this.isInBounds(new Coordinate(startX, startY))) {
+            throw new Exception("Start Coordinates Out of Bound! OutOfBoundException");
+        }
+        if(this.isAtBounds(new Coordinate(startX, startY))){
+            tile = this.generateBoundedTile(new Coordinate(startX, startY), true);
+            maze[startY][startX] = tile;
+            int pathSum = (tile.getDown() ? 1 : 0) + (tile.getUp()? 1 : 0);
+            pathSum += (tile.getLeft()? 1 : 0) + (tile.getRight()? 1 : 0);
+            this.tilesCreated++;
+            this.pathAverage = (this.pathAverage * (tilesCreated-1) + pathSum)/ tilesCreated;
+        }else{
+            int pathSumDecider = this.getRandomInt(4)+1;
+            if(pathSumDecider == 4){
+                int randomTile = this.getRandomInt(MazeTile.fourWayPath.length/2)+ MazeTile.fourWayPath.length/2;
+                tile = MazeTile.fourWayPath[randomTile];
                 maze[startY][startX] = tile;
-                int pathSum = (tile.getDown() ? 1 : 0) + (tile.getUp()? 1 : 0);
-                pathSum += (tile.getLeft()? 1 : 0) + (tile.getRight()? 1 : 0);
-                this.tilesCreated++;
-                this.pathAverage = (this.pathAverage * (tilesCreated-1) + pathSum)/ tilesCreated;
+            }else if(pathSumDecider == 3){
+                int randomTile = this.getRandomInt(MazeTile.threeWayPath.length/2)+ MazeTile.threeWayPath.length/2;
+                tile = MazeTile.threeWayPath[randomTile];
+                maze[startY][startX] = tile;
+            }else if(pathSumDecider == 2){
+                int randomTile = this.getRandomInt(MazeTile.twoWayPath.length/2)+ MazeTile.twoWayPath.length/2;
+                tile = MazeTile.twoWayPath[randomTile];
+                maze[startY][startX] = tile;
             }else{
-                int pathSumDecider = this.getRandomInt(4)+1;
-                if(pathSumDecider == 4){
-                    int randomTile = this.getRandomInt(MazeTile.fourWayPath.length/2)+ MazeTile.fourWayPath.length/2;
-                    tile = MazeTile.fourWayPath[randomTile];
-                    maze[startY][startX] = tile;
-                }else if(pathSumDecider == 3){
-                    int randomTile = this.getRandomInt(MazeTile.threeWayPath.length/2)+ MazeTile.threeWayPath.length/2;
-                    tile = MazeTile.threeWayPath[randomTile];
-                    maze[startY][startX] = tile;
-                }else if(pathSumDecider == 2){
-                    int randomTile = this.getRandomInt(MazeTile.twoWayPath.length/2)+ MazeTile.twoWayPath.length/2;
-                    tile = MazeTile.twoWayPath[randomTile];
-                    maze[startY][startX] = tile;
-                }else{
-                    int randomTile = this.getRandomInt(MazeTile.oneWayPath.length/2)+ MazeTile.oneWayPath.length/2;
-                    tile = MazeTile.oneWayPath[randomTile];
-                    maze[startY][startX] = tile;
-                }
-                this.tilesCreated++;
-                this.pathAverage = ((this.pathAverage * (tilesCreated-1)) + pathSumDecider)/ tilesCreated;
+                int randomTile = this.getRandomInt(MazeTile.oneWayPath.length/2)+ MazeTile.oneWayPath.length/2;
+                tile = MazeTile.oneWayPath[randomTile];
+                maze[startY][startX] = tile;
             }
-            openPaths.add(new Coordinate(startX,startY));
-            return tile;
+            this.tilesCreated++;
+            this.pathAverage = ((this.pathAverage * (tilesCreated-1)) + pathSumDecider)/ tilesCreated;
+        }
+        openPaths.add(new Coordinate(startX,startY));
+        lastCoordinate = new Coordinate(startX, startY);
+        return tile;
     }
     
     private MazeTile generateTile(){
@@ -108,204 +117,83 @@ public class Maze {
         int randomInt = this.getRandomInt(openPaths.size()-1);
         if(randomInt == -1){
             mazeDone = true;
+            maze[lastCoordinate.getY()][lastCoordinate.getX()].addStar();
             return null;
         }
-        Direction nextDirection = this.chooseNextDirection(openPaths.get(randomInt));
-        Coordinate oldTile = openPaths.get(randomInt);
+        Coordinate oldCoord = openPaths.get(randomInt);
+        MazeTile oldTile = maze[oldCoord.getY()][oldCoord.getX()];
         Coordinate activeTile = null;
         ArrayList<Direction> openDirections = new ArrayList<>();
-        openDirections.add(Direction.left);
-        openDirections.add(Direction.right);
-        openDirections.add(Direction.up);
-        openDirections.add(Direction.down);
-        while(activeTile == null){
-            if(nextDirection == Direction.down && openDirections.contains(Direction.down)){
-                activeTile = new Coordinate(oldTile.getX(), oldTile.getY() + 1);
-                openDirections.remove(nextDirection);
-            }else if(nextDirection == Direction.left && openDirections.contains(Direction.left)){
-                activeTile = new Coordinate(oldTile.getX() - 1 , oldTile.getY());
-                openDirections.remove(nextDirection);
-            }else if(nextDirection == Direction.right && openDirections.contains(Direction.right)){
-                activeTile = new Coordinate(oldTile.getX() + 1, oldTile.getY());
-                openDirections.remove(nextDirection);
-            }else if(nextDirection == Direction.up && openDirections.contains(Direction.up)){
-                activeTile = new Coordinate(oldTile.getX(), oldTile.getY() - 1);
-                openDirections.remove(nextDirection);
-            }
-            if(activeTile != null && this.doesTileExist(activeTile)){
-                activeTile = null;
-            }
-            if(openDirections.isEmpty()){
-                openPaths.remove(randomInt);
-                return null;
-            }
-            int randomDirectionInt = this.getRandomInt(openDirections.size());
-            nextDirection = openDirections.get(randomDirectionInt);
-        }
-        if(!this.isInBounds(activeTile)){
+        if(oldTile.getLeft() &&  !this.doesTileExist(new Coordinate(oldCoord.getX()-1, oldCoord.getY()))) openDirections.add(Direction.left);
+        if(oldTile.getRight()&&  !this.doesTileExist(new Coordinate(oldCoord.getX()+1, oldCoord.getY()))) openDirections.add(Direction.right);
+        if(oldTile.getUp()   &&  !this.doesTileExist(new Coordinate(oldCoord.getX(), oldCoord.getY()-1))) openDirections.add(Direction.up);
+        if(oldTile.getDown() &&  !this.doesTileExist(new Coordinate(oldCoord.getX(), oldCoord.getY()+1))) openDirections.add(Direction.down);
+        if(openDirections.isEmpty()){
             openPaths.remove(randomInt);
             return null;
         }
+        int randomDirectionInt = this.getRandomInt(openDirections.size());
+        Direction nextDirection = openDirections.get(randomDirectionInt);
+        if(nextDirection == Direction.left)  activeTile = new Coordinate(oldCoord.getX()-1,oldCoord.getY());
+        if(nextDirection == Direction.right) activeTile = new Coordinate(oldCoord.getX()+1,oldCoord.getY());
+        if(nextDirection == Direction.down)  activeTile = new Coordinate(oldCoord.getX(),oldCoord.getY()+1);
+        if(nextDirection == Direction.up)    activeTile = new Coordinate(oldCoord.getX(),oldCoord.getY()-1);
         ArrayList<Direction> validDirections = this.getOptionalDirections(activeTile);
         ArrayList<Direction> requiredDirections = this.getRequiredDirections(activeTile);
         ArrayList<Direction> activePath = new ArrayList<>();
         for (Direction requiredDirection : requiredDirections) {
             activePath.add(requiredDirection);
         }
-        int pathSumDecider = 0;
+        int pathSumDecider;
+        int pathSize;
         if(this.pathAverage < 2){
             //more paths must be generated
             //1 way path - 10% , 2 way path - 20%
             //3 way path - 30% , 4 way path - 40%
-            int pathSize = this.getRandomIntFromRatios(10, 20, 30, 40) + 1;
-            if(requiredDirections.size() >= pathSize){
-                tile = new MazeTile(requiredDirections);
-                pathSumDecider = requiredDirections.size();
-            }else{
-                int neededPaths = pathSize - requiredDirections.size();
-                for(; neededPaths > 0; neededPaths--){
-                    int left = 0;
-                    int right = 0;
-                    int down = 0;
-                    int up = 0;
-                    for (Direction validDirection : validDirections) {
-                        if (validDirection == Direction.left) {
-                            left = 1;
-                        } else if (validDirection == Direction.right) {
-                            right = 1;
-                        } else if (validDirection == Direction.down) {
-                            down = 1;
-                        } else if (validDirection == Direction.up) {
-                            up = 1;
-                        }
-                    }
-                    Direction randomDirection = this.getRandomDirectionFromRatios(left, right, down, up);
-                    if(left != 0 || right != 0 || down != 0 || up != 0){
-                        activePath.add(randomDirection);
-                        validDirections.remove(randomDirection);
-                    }
-                }
-                pathSumDecider = pathSize;
-                tile = new MazeTile(activePath);
-            }
+            pathSize = this.getRandomIntFromRatios(10, 20, 30, 40) + 1;
         }else if(this.pathAverage > 2){
             if(this.pathAverage < 2.5){
                 //there are a decent amount of paths
                 //1 way path - 20% , 2 way path - 30%
                 //3 way path - 30% , 4 way path - 20%
-                int pathSize = this.getRandomIntFromRatios(20, 30, 30, 20) + 1;
-                if(requiredDirections.size() >= pathSize){
-                    tile = new MazeTile(requiredDirections);
-                    pathSumDecider = requiredDirections.size();
-                }else{
-                    int neededPaths = pathSize - requiredDirections.size();
-                    for(; neededPaths > 0; neededPaths--){
-                        int left = 0;
-                        int right = 0;
-                        int down = 0;
-                        int up = 0;
-                        for (Direction validDirection : validDirections) {
-                            if (validDirection == Direction.left) {
-                                left = 1;
-                            } else if (validDirection == Direction.right) {
-                                right = 1;
-                            } else if (validDirection == Direction.down) {
-                                down = 1;
-                            } else if (validDirection == Direction.up) {
-                                up = 1;
-                            }
-                        }
-                        Direction randomDirection = this.getRandomDirectionFromRatios(left, right, down, up);
-                        if(left != 0 || right != 0 || down != 0 || up != 0){
-                            activePath.add(randomDirection);
-                            validDirections.remove(randomDirection);
-                        }
-                    }
-                    pathSumDecider = pathSize;
-                    tile = new MazeTile(activePath);
-                }
+                pathSize = this.getRandomIntFromRatios(20, 30, 30, 20) + 1;
             }else{
                 //there are too many paths
                 //1 way path - 40% , 2 way path - 30%
                 //3 way path - 20% , 4 way path - 10%
-                int pathSize = this.getRandomIntFromRatios(40, 30, 20, 10) + 1;
-                if(requiredDirections.size() >= pathSize){
-                    tile = new MazeTile(requiredDirections);
-                    pathSumDecider = requiredDirections.size();
-                }else{
-                    int neededPaths = pathSize - requiredDirections.size();
-                    for(; neededPaths > 0; neededPaths--){
-                        int left = 0;
-                        int right = 0;
-                        int down = 0;
-                        int up = 0;
-                        for (Direction validDirection : validDirections) {
-                            if (validDirection == Direction.left) {
-                                left = 1;
-                            } else if (validDirection == Direction.right) {
-                                right = 1;
-                            } else if (validDirection == Direction.down) {
-                                down = 1;
-                            } else if (validDirection == Direction.up) {
-                                up = 1;
-                            }
-                        }
-                        Direction randomDirection = this.getRandomDirectionFromRatios(left, right, down, up);
-                        if(left != 0 || right != 0 || down != 0 || up != 0){
-                            activePath.add(randomDirection);
-                            validDirections.remove(randomDirection);
-                        }
-                    }
-                    pathSumDecider = pathSize;
-                    tile = new MazeTile(activePath);
-                }
+                pathSize = this.getRandomIntFromRatios(40, 30, 20, 10) + 1;
             }
         }else{
             //paths can be created or destroyed
             //1 way path - 25% , 2 way path - 25%
             //3 way path - 25% , 4 way path - 25%
-            int pathSize = this.getRandomIntFromRatios(25, 25, 25, 25);
-            if(requiredDirections.size() >= pathSize){
-                tile = new MazeTile(requiredDirections);
-                pathSumDecider = requiredDirections.size();
-            }else{
-                int neededPaths = pathSize - requiredDirections.size();
-                for(; neededPaths > 0; neededPaths--){
-                    int left = 0;
-                    int right = 0;
-                    int down = 0;
-                    int up = 0;
-                    for (Direction validDirection : validDirections) {
-                        if (validDirection == Direction.left) {
-                            left = 1;
-                        } else if (validDirection == Direction.right) {
-                            right = 1;
-                        } else if (validDirection == Direction.down) {
-                            down = 1;
-                        } else if (validDirection == Direction.up) {
-                            up = 1;
-                        }
-                    }
-                    Direction randomDirection = this.getRandomDirectionFromRatios(left, right, down, up);
-                    if(left != 0 || right != 0 || down != 0 || up != 0){
-                        activePath.add(randomDirection);
-                        validDirections.remove(randomDirection);
-                    }
-                }
-                pathSumDecider = pathSize;
-                tile = new MazeTile(activePath);
-            }
+            pathSize = this.getRandomIntFromRatios(25, 25, 25, 25);
         }
+        if(requiredDirections.size() < pathSize){
+            int neededPaths = pathSize - requiredDirections.size();
+            for(; neededPaths > 0; neededPaths--){
+                int left = validDirections.contains(Direction.left) ? 1 : 0;
+                int right = validDirections.contains(Direction.right) ? 1 : 0;
+                int down = validDirections.contains(Direction.down) ? 1 : 0;
+                int up = validDirections.contains(Direction.up) ? 1 : 0;
+                Direction randomDirection = this.getRandomDirectionFromRatios(left, right, down, up);
+                if(left != 0 || right != 0 || down != 0 || up != 0){
+                    activePath.add(randomDirection);
+                    validDirections.remove(randomDirection);
+                }
+            }
+        }             
         this.tilesCreated++;
         tile = new MazeTile(activePath);
         pathSumDecider = activePath.size();
         this.pathAverage = ((this.pathAverage * (tilesCreated-1)) + pathSumDecider)/ tilesCreated;
         maze[activeTile.getY()][activeTile.getX()] = tile;
         openPaths.add(activeTile);
+        lastCoordinate = activeTile;
         return tile;
     }
     
-    public void nullifyMissing(){
+    private void nullifyMissing(){
         for(int y = 0; y < maze.length; y++){
             for(int x = 0; x < maze[0].length;x++){
                 if(!this.doesTileExist(new Coordinate(x,y))){
@@ -318,23 +206,11 @@ public class Maze {
     private Direction chooseNextDirection(Coordinate coord){
         ArrayList<Direction> validDirections = new ArrayList<>();
         MazeTile openTile = maze[coord.getY()][coord.getX()];
-        if(openTile.getLeft()){
-            validDirections.add(Direction.left);
-        }
-        if(openTile.getDown()){
-            validDirections.add(Direction.down);
-        }
-        if(openTile.getRight()){
-            validDirections.add(Direction.right);
-        }
-        if(openTile.getUp()){
-            validDirections.add(Direction.up);
-        }
+        if(openTile.getLeft())  validDirections.add(Direction.left);
+        if(openTile.getDown())  validDirections.add(Direction.down);
+        if(openTile.getRight()) validDirections.add(Direction.right);
+        if(openTile.getUp())    validDirections.add(Direction.up);
         int randomDirection = this.getRandomInt(validDirections.size()-1);
-        if(randomDirection == -1){
-            mazeDone = true;
-            return null;
-        }
         return validDirections.get(randomDirection);
     }
     
@@ -418,23 +294,27 @@ public class Maze {
     
     private MazeTile generateBoundedTile(Coordinate coord, boolean star){
         ArrayList<Direction> validDirections = new ArrayList<>();
+        validDirections.add(Direction.left);
+        validDirections.add(Direction.right);
+        validDirections.add(Direction.down);
+        validDirections.add(Direction.up);
         if(coord.getY() == 0){
-            validDirections.add(Direction.down);
+            validDirections.remove(Direction.up);
         }
         if(coord.getY() == maze.length-1){
-            validDirections.add(Direction.up);
+            validDirections.remove(Direction.down);
         }
         if(coord.getX() == 0){
-            validDirections.add(Direction.right);
+            validDirections.remove(Direction.left);
         }
         if(coord.getX() == maze[0].length-1){
-            validDirections.add(Direction.left);
+            validDirections.remove(Direction.right);
         }
         
         return new MazeTile(validDirections, star);
     }
     
-    public int getRandomInt(int max){
+    private int getRandomInt(int max){
         return (int) Math.floor(Math.random()*max);
     }
     
@@ -457,7 +337,11 @@ public class Maze {
         return this.pathAverage;
     }
     
-    public Direction getRandomDirectionFromRatios(int left, int right, int down, int up){
+    public int getTilesCreated(){
+        return this.tilesCreated;
+    }
+    
+    private Direction getRandomDirectionFromRatios(int left, int right, int down, int up){
         int[] pathArray = new int[]{left, right, down, up};
         Arrays.sort(pathArray);
         int leftIndex = -1;
@@ -487,7 +371,7 @@ public class Maze {
         }
     }
     
-    public int getRandomIntFromRatios(int left, int right, int down, int up){
+    private int getRandomIntFromRatios(int left, int right, int down, int up){
         int sum = left + right + down + up;
         int[] pathArray = new int[]{left, right, down, up};
         Arrays.sort(pathArray);
@@ -524,5 +408,7 @@ public class Maze {
         }
         return randomizedInteger;
     }
+    
+    
     
 }
