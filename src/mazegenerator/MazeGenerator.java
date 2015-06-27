@@ -22,11 +22,10 @@ public class MazeGenerator {
 //        maze[0][1] = new MazeTile(false,true,true,false);
 //        maze[1][0] = new MazeTile(true,false,false,true);
 //        maze[1][1] = new MazeTile(false,true,false,true);
-        Maze maze = new Maze(7, 7, 1,1);
+        Maze maze = new Maze(47, 11, 1,1);
         maze.generate();
         
-        System.out.println(maze.toString());
-        System.out.println(maze.getPathAverage());
+        System.out.print(maze.toString());
     }
 
 }
