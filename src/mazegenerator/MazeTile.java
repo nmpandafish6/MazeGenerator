@@ -47,8 +47,9 @@ public class MazeTile {
                                                                    new MazeTile((byte)20),
                                                                    new MazeTile((byte)24)};
 /*    
-   _ _ _ _ _
-   * u d l r
+   _  _ _ _ _
+   *  u d l r
+   16 8 4 2 1 
 */ 
     public MazeTile(boolean left, boolean right, boolean up, boolean down){
         orientation += left ? leftMask : 0;
@@ -70,17 +71,17 @@ public class MazeTile {
         boolean rightMatched = false;
         boolean downMatched = false;
         boolean upMatched = false;
-        for(int i = 0; i < directions.size(); i++){
-            if(directions.get(i) == Direction.left && !leftMatched){
+        for (Direction direction : directions) {
+            if (direction == Direction.left && !leftMatched) {
                 orientation += leftMask;
                 leftMatched = true;
-            }else if(directions.get(i) == Direction.right && !rightMatched){
+            } else if (direction == Direction.right && !rightMatched) {
                 orientation += rightMask;
                 rightMatched = true;
-            }else if(directions.get(i) == Direction.up && !upMatched){
+            } else if (direction == Direction.up && !upMatched) {
                 orientation += upMask;
                 upMatched = true;
-            }else if(directions.get(i) == Direction.down && !downMatched){
+            } else if (direction == Direction.down && !downMatched) {
                 orientation += downMask;
                 downMatched = true;
             }
@@ -92,17 +93,17 @@ public class MazeTile {
         boolean rightMatched = false;
         boolean downMatched = false;
         boolean upMatched = false;
-        for(int i = 0; i < directions.size(); i++){
-            if(directions.get(i) == Direction.left && !leftMatched){
+        for (Direction direction : directions) {
+            if (direction == Direction.left && !leftMatched) {
                 orientation += leftMask;
                 leftMatched = true;
-            }else if(directions.get(i) == Direction.right && !rightMatched){
+            } else if (direction == Direction.right && !rightMatched) {
                 orientation += rightMask;
                 rightMatched = true;
-            }else if(directions.get(i) == Direction.up && !upMatched){
+            } else if (direction == Direction.up && !upMatched) {
                 orientation += upMask;
                 upMatched = true;
-            }else if(directions.get(i) == Direction.down && !downMatched){
+            } else if (direction == Direction.down && !downMatched) {
                 orientation += downMask;
                 downMatched = true;
             }
@@ -117,7 +118,7 @@ public class MazeTile {
     public String getTopRow(){
         boolean up = (orientation & upMask) != 0;
         String topRow = "";
-        if(up){
+        if(up == true){
             topRow = "\u2593 \u2593";
         }else{
             topRow = "\u2593\u2593\u2593";
@@ -130,17 +131,17 @@ public class MazeTile {
         boolean right = (orientation & rightMask) != 0;
         boolean star = (orientation & starMask) != 0;
         String middleRow = "";
-        if(left){
+        if(left == true){
             middleRow += " ";
         }else{
             middleRow += "\u2593";
         }
-        if(star){
+        if(star == true){
             middleRow += "*";
         }else{
             middleRow += " ";
         }
-        if(right){
+        if(right == true){
             middleRow += " ";
         }else{
             middleRow += "\u2593";
@@ -151,7 +152,7 @@ public class MazeTile {
     public String getBottomRow(){
         boolean down = (orientation & downMask) != 0;
         String bottomRow = "";
-        if(down){
+        if(down == true){
             bottomRow = "\u2593 \u2593";
         }else{
             bottomRow = "\u2593\u2593\u2593";
@@ -161,38 +162,23 @@ public class MazeTile {
     
     @Override
     public String toString(){
-        boolean left = (orientation & leftMask) != 0;
-        boolean right = (orientation & rightMask) != 0;
-        boolean up = (orientation & upMask) != 0;
-        boolean down = (orientation & downMask) != 0;
-//        String strOrientation = (left ? "Left," : "") +
-//                                (right ? "Right," : "") +
-//                                (up ? "Up," : "") +
-//                                (down ? "Down," : "") +
-//                                (!left & !right & !up & !down ? "Null," : "");
-//        return strOrientation;
-        String symbol = this.getTopRow() + "\n" + this.getMiddleRow() + "\n" + this.getBottomRow();
-        return symbol;
+        return this.getTopRow() + "\n" + this.getMiddleRow() + "\n" + this.getBottomRow();
     }
     
     public boolean getUp(){
-        boolean up = (orientation & upMask) != 0;
-        return up;
+        return (orientation & upMask) != 0;
     }
     
     public boolean getDown(){
-        boolean down = (orientation & downMask) != 0;
-        return down;
+        return (orientation & downMask) != 0;
     }
 
     public boolean getLeft(){
-        boolean left = (orientation & leftMask) != 0;
-        return left;
+        return (orientation & leftMask) != 0;
     }
     
     public boolean getRight(){
-        boolean right = (orientation & rightMask) != 0;
-        return right;
+        return (orientation & rightMask) != 0;
     }
     
 }
