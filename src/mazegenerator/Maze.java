@@ -144,7 +144,6 @@ public class Maze {
         for (Direction requiredDirection : requiredDirections) {
             activePath.add(requiredDirection);
         }
-        int pathSumDecider;
         int pathSize;
         if(this.pathAverage < 2){
             //more paths must be generated
@@ -185,8 +184,8 @@ public class Maze {
         }             
         this.tilesCreated++;
         tile = new MazeTile(activePath);
-        pathSumDecider = activePath.size();
-        this.pathAverage = ((this.pathAverage * (tilesCreated-1)) + pathSumDecider)/ tilesCreated;
+        pathSize = activePath.size();
+        this.pathAverage = ((this.pathAverage * (tilesCreated-1)) + pathSize)/ tilesCreated;
         maze[activeTile.getY()][activeTile.getX()] = tile;
         openPaths.add(activeTile);
         lastCoordinate = activeTile;
@@ -201,17 +200,6 @@ public class Maze {
                 }
             }
         }
-    }
-    
-    private Direction chooseNextDirection(Coordinate coord){
-        ArrayList<Direction> validDirections = new ArrayList<>();
-        MazeTile openTile = maze[coord.getY()][coord.getX()];
-        if(openTile.getLeft())  validDirections.add(Direction.left);
-        if(openTile.getDown())  validDirections.add(Direction.down);
-        if(openTile.getRight()) validDirections.add(Direction.right);
-        if(openTile.getUp())    validDirections.add(Direction.up);
-        int randomDirection = this.getRandomInt(validDirections.size()-1);
-        return validDirections.get(randomDirection);
     }
     
     private ArrayList<Direction> getOptionalDirections(Coordinate coord){
@@ -298,19 +286,10 @@ public class Maze {
         validDirections.add(Direction.right);
         validDirections.add(Direction.down);
         validDirections.add(Direction.up);
-        if(coord.getY() == 0){
-            validDirections.remove(Direction.up);
-        }
-        if(coord.getY() == maze.length-1){
-            validDirections.remove(Direction.down);
-        }
-        if(coord.getX() == 0){
-            validDirections.remove(Direction.left);
-        }
-        if(coord.getX() == maze[0].length-1){
-            validDirections.remove(Direction.right);
-        }
-        
+        if(coord.getY() == 0)                validDirections.remove(Direction.up);
+        if(coord.getY() == maze.length-1)    validDirections.remove(Direction.down);
+        if(coord.getX() == 0)                validDirections.remove(Direction.left);
+        if(coord.getX() == maze[0].length-1) validDirections.remove(Direction.right);
         return new MazeTile(validDirections, star);
     }
     
@@ -326,9 +305,7 @@ public class Maze {
     
     private boolean doesTileExist(Coordinate coord){
         boolean inBounds = this.isInBounds(coord);
-        if(!inBounds){
-            return false;
-        }
+        if(!inBounds) return false;
         boolean notNull = maze[coord.getY()][coord.getX()] != null;
         return notNull;
     }
@@ -408,7 +385,4 @@ public class Maze {
         }
         return randomizedInteger;
     }
-    
-    
-    
 }
