@@ -16,7 +16,7 @@ public class MazeGenerator {
         for(int i = 0; i < numberOfFiles; i++){
             Maze maze = new Maze(width, height, 0,0);
             fw = new FileWriter("Maze " + i + ".md");
-            fw.write("```");
+            fw.write("```\n");
             maze.generate();
             while(maze.getTilesCreated() < (width * height / 2)){
                 System.out.println("Regenerating");
