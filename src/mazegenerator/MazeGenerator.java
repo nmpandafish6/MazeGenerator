@@ -24,6 +24,7 @@ public class MazeGenerator {
 //        maze[1][1] = new MazeTile(false,true,false,true);
         Maze maze = new Maze(47, 11, 1,1);
         //Test
+        //Test 2
         maze.generate();
         
         System.out.print(maze.toString());
