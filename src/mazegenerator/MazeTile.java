@@ -181,4 +181,10 @@ public class MazeTile {
         return (orientation & rightMask) != 0;
     }
     
+    public int getOpenPaths(){
+        int openPaths = (this.getUp() ? 1 : 0) + (this.getDown() ? 1 : 0);
+        openPaths += (this.getLeft() ? 1 : 0) + (this.getRight() ? 1 : 0);
+        return openPaths;
+    }
+    
 }

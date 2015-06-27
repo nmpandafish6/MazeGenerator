@@ -155,10 +155,8 @@ public class Maze {
         int pathSumDecider = 0;
         if(this.pathAverage < 2){
             //more paths must be generated
-            //1 way path - 10%
-            //2 way path - 20%
-            //3 way path - 30%
-            //4 way path - 40%
+            //1 way path - 10% , 2 way path - 20%
+            //3 way path - 30% , 4 way path - 40%
             int pathSize = this.getRandomIntFromRatios(10, 20, 30, 40) + 1;
             if(requiredDirections.size() >= pathSize){
                 tile = new MazeTile(requiredDirections);
@@ -193,10 +191,8 @@ public class Maze {
         }else if(this.pathAverage > 2){
             if(this.pathAverage < 2.5){
                 //there are a decent amount of paths
-                //1 way path - 20%
-                //2 way path - 30%
-                //3 way path - 30%
-                //4 way path - 20%
+                //1 way path - 20% , 2 way path - 30%
+                //3 way path - 30% , 4 way path - 20%
                 int pathSize = this.getRandomIntFromRatios(20, 30, 30, 20) + 1;
                 if(requiredDirections.size() >= pathSize){
                     tile = new MazeTile(requiredDirections);
@@ -230,10 +226,8 @@ public class Maze {
                 }
             }else{
                 //there are too many paths
-                //1 way path - 40%
-                //2 way path - 30%
-                //3 way path - 20%
-                //4 way path - 10%
+                //1 way path - 40% , 2 way path - 30%
+                //3 way path - 20% , 4 way path - 10%
                 int pathSize = this.getRandomIntFromRatios(40, 30, 20, 10) + 1;
                 if(requiredDirections.size() >= pathSize){
                     tile = new MazeTile(requiredDirections);
@@ -268,10 +262,8 @@ public class Maze {
             }
         }else{
             //paths can be created or destroyed
-            //1 way path - 25%
-            //2 way path - 25%
-            //3 way path - 25%
-            //4 way path - 25%
+            //1 way path - 25% , 2 way path - 25%
+            //3 way path - 25% , 4 way path - 25%
             int pathSize = this.getRandomIntFromRatios(25, 25, 25, 25);
             if(requiredDirections.size() >= pathSize){
                 tile = new MazeTile(requiredDirections);
@@ -425,28 +417,21 @@ public class Maze {
     }
     
     private MazeTile generateBoundedTile(Coordinate coord, boolean star){
-        boolean leftBounded = false;
-        boolean rightBounded = false;
-        boolean upBounded = false;
-        boolean downBounded = false;
+        ArrayList<Direction> validDirections = new ArrayList<>();
         if(coord.getY() == 0){
-            upBounded = true;
+            validDirections.add(Direction.down);
         }
         if(coord.getY() == maze.length-1){
-            downBounded = true;
+            validDirections.add(Direction.up);
         }
         if(coord.getX() == 0){
-            leftBounded = true;
+            validDirections.add(Direction.right);
         }
         if(coord.getX() == maze[0].length-1){
-            rightBounded = true;
+            validDirections.add(Direction.left);
         }
         
-        boolean left = !leftBounded;
-        boolean right = !rightBounded;
-        boolean up = !upBounded;
-        boolean down = !downBounded;
-        return new MazeTile(left,right,up,down, star);
+        return new MazeTile(validDirections, star);
     }
     
     public int getRandomInt(int max){
@@ -473,15 +458,13 @@ public class Maze {
     }
     
     public Direction getRandomDirectionFromRatios(int left, int right, int down, int up){
-        int sum = left + right + down + up;
         int[] pathArray = new int[]{left, right, down, up};
         Arrays.sort(pathArray);
         int leftIndex = -1;
         int rightIndex = -1;
         int downIndex = -1;
         int upIndex = -1;
-        int i = 0;
-        while(leftIndex < 0 || rightIndex < 0 || downIndex < 0 || upIndex < 0){
+        for(int i = 0;leftIndex < 0 || rightIndex < 0 || downIndex < 0 || upIndex < 0;i++){
             if(pathArray[i] == left && leftIndex == -1){
                 leftIndex = i;
             }else if(pathArray[i] == right && rightIndex == -1){
@@ -491,30 +474,8 @@ public class Maze {
             }else if(pathArray[i] == up && upIndex == -1){
                 upIndex = i;
             }
-            i++;
         }
-        int randomInt = this.getRandomInt(sum)+1;
-        int breakInt = pathArray[0]*4;
-        int lastBreakInt = 0;
-        int randomDirection = 0;
-        if(randomInt <= breakInt){
-            randomDirection = (randomInt - lastBreakInt + 3) % 4;
-        }else{
-            lastBreakInt = breakInt;
-            breakInt += (pathArray[1] - pathArray[0]) * 3;
-            if(randomInt <= breakInt){
-                randomDirection = ((randomInt - lastBreakInt + 2) % 3) + 1;
-            }else{
-                lastBreakInt = breakInt;
-                breakInt += (pathArray[2] - pathArray[1]) * 2;
-                if(randomInt <= breakInt){
-                    randomDirection = (randomInt - lastBreakInt + 1) % 2 + 2;
-                }else{
-                    lastBreakInt = breakInt;
-                    randomDirection = (randomInt - lastBreakInt) % 1 + 3;
-                }
-            }
-        }
+        int randomDirection = this.getRandomIntFromRatios(left, right, down, up);
         if(randomDirection == leftIndex){
             return Direction.left;
         }else if(randomDirection == rightIndex){
@@ -534,8 +495,7 @@ public class Maze {
         int rightIndex = -1;
         int downIndex = -1;
         int upIndex = -1;
-        int i = 0;
-        while(leftIndex < 0 || rightIndex < 0 || downIndex < 0 || upIndex < 0){
+        for(int i = 0;leftIndex < 0 || rightIndex < 0 || downIndex < 0 || upIndex < 0; i++){
             if(pathArray[i] == left && leftIndex == -1){
                 leftIndex = i;
             }else if(pathArray[i] == right && rightIndex == -1){
@@ -545,31 +505,24 @@ public class Maze {
             }else if(pathArray[i] == up && upIndex == -1){
                 upIndex = i;
             }
-            i++;
         }
-        int randomInt = this.getRandomInt(sum)+1;
-        int breakInt = pathArray[0]*4;
-        int lastBreakInt = 0;
-        int randomInt2 = 0;
-        if(randomInt <= breakInt){
-            randomInt2 = (randomInt - lastBreakInt + 3) % 4;
-        }else{
-            lastBreakInt = breakInt;
-            breakInt += (pathArray[1] - pathArray[0]) * 3;
-            if(randomInt <= breakInt){
-                randomInt2 = ((randomInt - lastBreakInt + 2) % 3) + 1;
+        int tempRandomInt = this.getRandomInt(sum)+1;
+        int lastBreakPoint = 0;
+        int randomizedInteger = 0;
+        for(int i = 0; i < pathArray.length; i++){
+            int breakPoint;
+            if(i == 0){
+                breakPoint = lastBreakPoint + pathArray[i]*(pathArray.length-i);
             }else{
-                lastBreakInt = breakInt;
-                breakInt += (pathArray[2] - pathArray[1]) * 2;
-                if(randomInt <= breakInt){
-                    randomInt2 = (randomInt - lastBreakInt + 1) % 2 + 2;
-                }else{
-                    lastBreakInt = breakInt;
-                    randomInt2 = (randomInt - lastBreakInt) % 1 + 3;
-                }
+                breakPoint = lastBreakPoint + (pathArray[i]-pathArray[i-1])*(pathArray.length-i);
             }
+            if(tempRandomInt <= breakPoint){
+                randomizedInteger = ((tempRandomInt - lastBreakPoint + (pathArray.length - i - 1)) % (pathArray.length - i))  + i;
+                return randomizedInteger;
+            }
+            lastBreakPoint = breakPoint;
         }
-        return randomInt2;
+        return randomizedInteger;
     }
     
 }
