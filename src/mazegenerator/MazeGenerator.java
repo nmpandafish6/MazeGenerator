@@ -23,6 +23,7 @@ public class MazeGenerator {
 //        maze[1][0] = new MazeTile(true,false,false,true);
 //        maze[1][1] = new MazeTile(false,true,false,true);
         Maze maze = new Maze(47, 11, 1,1);
+        //Test
         maze.generate();
         
         System.out.print(maze.toString());
